@@ -1,0 +1,10 @@
+.terraform/
+*.tfstate
+*.tfstate.backup
+*.icloud
+*.tfstate
+*.tfstate.backup
+*.tfvars
+.terraform/
+*.backup
+
