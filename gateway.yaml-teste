@@ -5,8 +5,8 @@ metadata:
   namespace: envoy-gateway-system
   annotations:
     service.beta.kubernetes.io/azure-load-balancer-internal: "true"
-    service.beta.kubernetes.io/azure-load-balancer-ipv4: "10.10.1.50"
-    service.beta.kubernetes.io/azure-load-balancer-subnet: "subnet-k8s-lb"
+    #service.beta.kubernetes.io/azure-load-balancer-ipv4: "10.10.1.50"
+    #service.beta.kubernetes.io/azure-load-balancer-subnet: "subnet-k8s-lb"
 spec:
   gatewayClassName: envoy
   listeners:

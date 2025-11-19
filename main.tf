@@ -1,11 +1,3 @@
-
-#provider "kubernetes" {#
-
-#  config_path    = "~/.kube/config"
-#  host           = "https://172.16.24.128:8443"
-#  config_context = "minikube"
-#}
-
 ##conexao helm com cluster
 provider "helm" {
   kubernetes = {
@@ -13,11 +5,6 @@ provider "helm" {
   }
 }
 
-#conectando no cluster
-#provider "kubernetes" {
-#  config_path    = "~/.kube/config"
-#  config_context = "minikube"
-#}
 
 #providers
 terraform {
@@ -55,6 +42,27 @@ kind: GatewayClass
 metadata:
   name: envoy-gateway-class
 spec:
-  controllerName: gateway.envoyproxy.io/controller
+  controllerName: gateway.envoyproxy.io/gatewayclass-controller
+YAML
+}
+
+#criar gateway
+resource "kubectl_manifest" "envoy_gateway" {
+  yaml_body = <<YAML
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: envoy-gateway
+  namespace: envoy-gateway-system
+  annotations:
+    #service.beta.kubernetes.io/azure-load-balancer-internal: "true"
+    #service.beta.kubernetes.io/azure-load-balancer-ipv4: "10.10.1.50"
+    #service.beta.kubernetes.io/azure-load-balancer-subnet: "subnet-k8s-lb"
+spec:
+  gatewayClassName: envoy-gateway-class
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
 YAML
 }

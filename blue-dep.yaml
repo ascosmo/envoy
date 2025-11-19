@@ -1,0 +1,268 @@
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: blue-dep
+  namespace: default
+  labels:
+    app: ingress-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ingress-blue
+  template:
+    metadata:
+      labels:
+        app: ingress-blue
+        color: blue
+    spec:
+      containers:
+        - name: servicedemo
+          image: ascosmo/servicedemo:1.0
+          ports:
+            - containerPort: 80
+              protocol: TCP
+          imagePullPolicy: Always
+          resources:
+            limits:
+              cpu: 300m
+              memory: 256Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+          env:
+            - name: IMAGE_COLOR
+              value: blue
+            - name: NODE_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_SERVICE_ACCOUNT
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.serviceAccountName
+            - name: POD_CPU_REQUEST
+              valueFrom:
+                resourceFieldRef:
+                  containerName: servicedemo
+                  resource: requests.cpu
+            - name: POD_CPU_LIMIT
+              valueFrom:
+                resourceFieldRef:
+                  containerName: servicedemo
+                  resource: limits.cpu
+            - name: POD_MEM_REQUEST
+              valueFrom:
+                resourceFieldRef:
+                  containerName: servicedemo
+                  resource: requests.memory
+            - name: POD_MEM_LIMIT
+              valueFrom:
+                resourceFieldRef:
+                  containerName: servicedemo
+                  resource: limits.memory
+          volumeMounts:
+            - name: podinfo
+              mountPath: /etc/podinfo
+      volumes:
+        - name: podinfo
+          downwardAPI:
+            items:
+              - path: "labels"
+                fieldRef:
+                  fieldPath: metadata.labels
+              - path: "annotations"
+                fieldRef:
+                  fieldPath: metadata.annotations
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: green-dep
+  namespace: default
+  labels:
+    app: ingress-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ingress-green
+  template:
+    metadata:
+      labels:
+        app: ingress-green
+        color: black
+    spec:
+      containers:
+        - name: servicedemo
+          image: ascosmo/servicedemo:1.0
+          ports:
+            - containerPort: 80
+              protocol: TCP
+          imagePullPolicy: Always
+          resources:
+            limits:
+              cpu: 300m
+              memory: 256Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+          env:
+            - name: IMAGE_COLOR
+              value: green
+            - name: NODE_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_SERVICE_ACCOUNT
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.serviceAccountName
+            - name: POD_CPU_REQUEST
+              valueFrom:
+                resourceFieldRef:
+                  containerName: servicedemo
+                  resource: requests.cpu
+            - name: POD_CPU_LIMIT
+              valueFrom:
+                resourceFieldRef:
+                  containerName: servicedemo
+                  resource: limits.cpu
+            - name: POD_MEM_REQUEST
+              valueFrom:
+                resourceFieldRef:
+                  containerName: servicedemo
+                  resource: requests.memory
+            - name: POD_MEM_LIMIT
+              valueFrom:
+                resourceFieldRef:
+                  containerName: servicedemo
+                  resource: limits.memory
+          volumeMounts:
+            - name: podinfo
+              mountPath: /etc/podinfo
+      volumes:
+        - name: podinfo
+          downwardAPI:
+            items:
+              - path: "labels"
+                fieldRef:
+                  fieldPath: metadata.labels
+              - path: "annotations"
+                fieldRef:
+                  fieldPath: metadata.annotations
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: blue-svc
+  namespace: default
+  labels:
+    app: ingress-demo
+spec:
+  ports:
+    - port: 8100
+      targetPort: 80
+      name: web
+  selector:
+    app: ingress-blue
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: green-svc
+  namespace: default
+  labels:
+    app: ingress-demo
+spec:
+  ports:
+    - port: 8100
+      targetPort: 80
+      name: web
+  selector:
+    app: ingress-green
+  type: ClusterIP
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: demo-route
+  namespace: default
+spec:
+  parentRefs:
+    - name: envoy-gateway
+      namespace: envoy-gateway-system
+  hostnames:
+    - "servicedemo.com.br"
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix #Exact #PathPrefix #RegularExpression #PathPrefix #RegularExpression
+            value: "/green/($1)" #"/green/(.*)" #"^/green/(.*)$" #"/green"
+      filters:
+      - type: URLRewrite
+        urlRewrite:
+          path:
+            type: ReplacePrefixMatch
+            replacePrefixMatch: "/"
+      backendRefs:
+      - name: green-svc
+        port: 8100
+    - matches:
+        - path:
+            type: PathPrefix #RegularExpression #PathPrefix
+            value: "/blue" #"/blue"
+      filters:
+      - type: URLRewrite
+        urlRewrite:
+          path:
+            type: ReplacePrefixMatch
+            replacePrefixMatch: "/"
+      backendRefs:
+      - name: blue-svc
+        port: 8100
+
+      #backendRefs:
+      #  - name: green-svc
+      #    port: 8100
+      #    weight: 80
+      #  - name: blue-svc
+      #    port: 8100
+      #    weight: 20
+
+
