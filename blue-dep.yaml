@@ -227,42 +227,42 @@ spec:
   parentRefs:
     - name: envoy-gateway
       namespace: envoy-gateway-system
-  hostnames:
-    - "servicedemo.com.br"
+#  hostnames:
+#    - "servicedemo.192-168-49-2.nip.io"
   rules:
     - matches:
         - path:
-            type: PathPrefix #Exact #PathPrefix #RegularExpression #PathPrefix #RegularExpression
-            value: "/green/($1)" #"/green/(.*)" #"^/green/(.*)$" #"/green"
+            type: PathPrefix
+            value: "/green/"
       filters:
       - type: URLRewrite
         urlRewrite:
           path:
             type: ReplacePrefixMatch
             replacePrefixMatch: "/"
-      backendRefs:
-      - name: green-svc
-        port: 8100
+      backendRefs: ##############################
+        - name: green-svc
+          port: 8100
+          weight: 50
+        - name: blue-svc
+          port: 8100
+          weight: 50 ############################
     - matches:
         - path:
-            type: PathPrefix #RegularExpression #PathPrefix
-            value: "/blue" #"/blue"
+            type: PathPrefix
+            value: "/blue/"
       filters:
       - type: URLRewrite
         urlRewrite:
           path:
             type: ReplacePrefixMatch
             replacePrefixMatch: "/"
-      backendRefs:
-      - name: blue-svc
-        port: 8100
-
-      #backendRefs:
-      #  - name: green-svc
-      #    port: 8100
-      #    weight: 80
-      #  - name: blue-svc
-      #    port: 8100
-      #    weight: 20
+      backendRefs: ############################
+        - name: green-svc
+          port: 8100
+          weight: 50
+        - name: blue-svc
+          port: 8100
+          weight: 50 ########################
 
 
