@@ -257,12 +257,6 @@ spec:
           path:
             type: ReplacePrefixMatch
             replacePrefixMatch: "/"
-      backendRefs: ############################
-        - name: green-svc
-          port: 8100
-          weight: 50
-        - name: blue-svc
-          port: 8100
-          weight: 50 ########################
+
 
 

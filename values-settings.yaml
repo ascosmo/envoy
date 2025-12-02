@@ -1,13 +1,6 @@
 # Global settings
 global:
-  # If set, these take highest precedence and change both envoyGateway and ratelimit's container registry and pull secrets.
-  # -- Global override for image registry
   imageRegistry: ""
-  # -- Global override for image pull secrets
-  imagePullSecrets: []
-
-  # If set, these override image-specific values: useful when installing the chart in a private registry environment.
-  # Override image-specific values directly if a global override is not desired.
   images:
     envoyGateway:
       # This is the full image name including the hub, repo, and tag.
@@ -24,12 +17,11 @@ global:
       # Default behavior: latest images will be Always else IfNotPresent.
       pullPolicy: IfNotPresent
       # List of secrets in the same namespace of the component that can be used to pull images from private repositories.
-      pullSecrets: []
+      pullSecrets: []      
 
 podDisruptionBudget:
   minAvailable: 0
   # maxUnavailable: 1
-
 deployment:
   annotations: {}
   envoyGateway:

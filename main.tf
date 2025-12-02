@@ -5,7 +5,6 @@ provider "helm" {
   }
 }
 
-
 #providers
 terraform {
   required_providers {
@@ -64,5 +63,8 @@ spec:
     - name: http
       protocol: HTTP
       port: 80
+      allowedRoutes:
+        namespaces:
+          from: All
 YAML
 }
