@@ -61,9 +61,3 @@ spec:
       backendRefs:
       - name: nginx
         port: 80
-
-
-#NAOte
-#minikube start --driver=docker --network=079390f6fb79
-
-#docker network create --driver bridge --subnet 192.168.0.0/24 minha-rede
