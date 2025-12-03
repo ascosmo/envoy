@@ -1,3 +1,4 @@
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -10,16 +11,14 @@ spec:
   selector:
     matchLabels:
       app: nginx
-  strategy: {}
   template:
     metadata:
       labels:
         app: nginx
     spec:
-      containers:
-      - image: nginx
-        name: nginx
-
+      containers: 
+      - name: nginx
+        image: nginx
 ---
 apiVersion: v1
 kind: Service
